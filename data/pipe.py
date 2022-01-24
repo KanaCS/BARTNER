@@ -31,28 +31,24 @@ class BartNERPipe(Pipe):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
 
         assert target_type in ('word', 'bpe', 'span')
-
-        if dataset_name == 'conll2003':
+        
+        if (True):
             self.mapping = {
-                'loc': '<<location>>',
-                'per': '<<person>>',
-                'org': '<<organization>>',
-                'misc': '<<others>>',
-            }  # 记录的是原始tag与转换后的tag的str的匹配关系
-        elif dataset_name == 'en-ontonotes':
-            self.mapping = \
-                {'person': '<<person>>', 'gpe': '<<government>>', 'org': "<<organization>>",
-                 'date': "<<date>>", 'cardinal': '<<cardinal>>', 'norp': "<<nationality>>", 'money': "<<money>>",
-                 'percent': '<<percent>>', 'ordinal': '<<ordinal>>', 'loc': '<<location>>', 'time': "<<time>>",
-                 'work_of_art': "<<work_of_art>>", 'fac': "<<buildings>>", 'event': "<<event>>",
-                 'quantity': "<<quantity>>", 'product': "<<product>>", 'language': "<<language>>", 'law': "<<law>>"}
-        elif dataset_name == 'en_ace04':
+                'ans': '<<valid_span>>',
+                'noise': '<<noise>>',
+            }
+        else:
             self.mapping = {
-                'loc': '<<location>>', "gpe": "<<government>>", "wea": "<<weapon>>", 'veh': "<<vehicle>>",
-                'per': '<<person>>',
-                'org': '<<organization>>',
-                'fac': '<<buildings>>',
-            }  # 记录的是原始tag与转换后的tag的str的匹配关系
+                'person': '<<person>>', 
+                'date': "<<date>>", 
+                'cardinal': '<<cardinal>>', 
+                'money': "<<money>>",
+                'percent': '<<percent>>', 
+                'ordinal': '<<ordinal>>', 
+                'time': "<<time>>",
+                'quantity': "<<quantity>>",
+                'noise': '<<noise>>',
+            } # 记录的是原始tag与转换后的tag的str的匹配关系
 
         cur_num_tokens = self.tokenizer.vocab_size
         self.num_token_in_orig_tokenizer = cur_num_tokens
