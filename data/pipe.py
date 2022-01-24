@@ -198,16 +198,17 @@ class BartNERPipe(Pipe):
             path = paths
         else:
             path = paths['train']
-        if 'conll2003' in path or 'ontonotes' in path:
-            data_bundle = Conll2003NERLoader(demo=demo).load(paths)
-        # elif 'ontonotes' in path:
-        #     data_bundle = OntoNotesNERLoader(demo=demo).load(paths)
-        elif 'genia' in path:
-            data_bundle = NestedLoader(demo=demo).load(paths)
-        elif 'en_ace0' in path:
-            data_bundle = NestedLoader(demo=demo).load(paths)
-        else:
-            data_bundle = DiscontinuousNERLoader(demo=demo).load(paths)
+        data_bundle = JsonLoader(demo=demo).load(paths)
+#         if 'conll2003' in path or 'ontonotes' in path:
+#             data_bundle = Conll2003NERLoader(demo=demo).load(paths)
+#         # elif 'ontonotes' in path:
+#         #     data_bundle = OntoNotesNERLoader(demo=demo).load(paths)
+#         elif 'genia' in path:
+#             data_bundle = NestedLoader(demo=demo).load(paths)
+#         elif 'en_ace0' in path:
+#             data_bundle = NestedLoader(demo=demo).load(paths)
+#         else:
+#             data_bundle = DiscontinuousNERLoader(demo=demo).load(paths)
         data_bundle = self.process(data_bundle)
         return data_bundle
 
