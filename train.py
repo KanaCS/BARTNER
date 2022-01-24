@@ -28,7 +28,7 @@ fitlog.set_log_dir('logs')
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset_name', default='conll2003', type=str)
+parser.add_argument('--dataset_name', default='squad', type=str)
 
 args= parser.parse_args()
 dataset_name = args.dataset_name
@@ -49,41 +49,7 @@ args.warmup_ratio = 0.01
 eval_start_epoch = 15
 
 # the following hyper-parameters are for target_type=word
-if dataset_name == 'conll2003':  # three runs get 93.18/93.18/93.36 F1
-    max_len, max_len_a = 10, 0.6
-elif dataset_name == 'en-ontonotes':  # three runs get 90.46/90.4/90/52 F1
-    max_len, max_len_a = 10, 0.8
-elif dataset_name == 'CADEC':
-    max_len, max_len_a = 10, 1.6
-    args.num_beams = 4
-    args.lr = 2e-5
-    args.n_epochs = 30
-    eval_start_epoch=10
-elif dataset_name == 'Share_2013':
-    max_len, max_len_a = 10, 0.6
-    args.use_encoder_mlp = 0
-    args.num_beams = 4
-    args.lr = 2e-5
-    eval_start_epoch = 5
-elif dataset_name == 'Share_2014':
-    max_len, max_len_a = 10, 0.6
-    args.num_beams = 4
-    eval_start_epoch = 5
-    args.n_epochs = 30
-elif dataset_name == 'genia':  # three runs: 79.29/79.13/78.75
-    max_len, max_len_a = 10, 0.5
-    args.target_type = 'span'
-    args.lr = 2e-5
-    args.warmup_ratio = 0.01
-elif dataset_name == 'en_ace04':  # four runs: 86.84/86.33/87/87.17
-    max_len, max_len_a = 50, 1.1
-    args.lr = 4e-5
-elif dataset_name == 'en_ace05':  # three runs: 85.39/84.54/84.75
-    max_len, max_len_a = 50, 0.7
-    args.lr = 3e-5
-    args.batch_size = 12
-    args.num_beams = 4
-    args.warmup_ratio = 0.1
+max_len, max_len_a = 50, 0.7
 
 
 save_model = args.save_model
@@ -102,30 +68,23 @@ bart_name = args.bart_name
 schedule = args.schedule
 use_encoder_mlp = args.use_encoder_mlp
 
-fitlog.add_hyper(args)
+# fitlog.add_hyper(args)
 
-#######hyper
-#######hyper
+# #######hyper
+# #######hyper
 
-demo = False
-if demo:
-    cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}_demo.pt"
-else:
-    cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}.pt"
+# demo = False
+# if demo:
+#     cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}_demo.pt"
+# else:
+#     cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}.pt"
 
 @cache_results(cache_fn, _refresh=False)
 def get_data():
     pipe = BartNERPipe(tokenizer=bart_name, dataset_name=dataset_name, target_type=target_type)
-    if dataset_name == 'conll2003':
-        paths = {'test': "../data/conll2003/test.txt",
-                 'train': "../data/conll2003/train.txt",
-                 'dev': "../data/conll2003/dev.txt"}
-        data_bundle = pipe.process_from_file(paths, demo=demo)
-    elif dataset_name == 'en-ontonotes':
-        paths = '../data/en-ontonotes/english'
-        data_bundle = pipe.process_from_file(paths)
-    else:
-        data_bundle = pipe.process_from_file(f'../data/{dataset_name}', demo=demo)
+    paths = {'train': "../pj_dataset/squad/train.txt",
+             'test': "../pj_dataset/squad/dev.txt"}
+    data_bundle = pipe.process_from_file(paths, demo=demo)
     return data_bundle, pipe.tokenizer, pipe.mapping2id
 
 data_bundle, tokenizer, mapping2id = get_data()
@@ -180,26 +139,9 @@ callbacks = []
 callbacks.append(GradientClipCallback(clip_value=5, clip_type='value'))
 callbacks.append(WarmupCallback(warmup=args.warmup_ratio, schedule=schedule))
 
-if dataset_name not in ('conll2003', 'genia'):
-    callbacks.append(FitlogCallback(data_bundle.get_dataset('test'), raise_threshold=0.04,
-                                        eval_begin_epoch=eval_start_epoch))  # 如果低于0.04大概率是讯飞了
-    eval_dataset = data_bundle.get_dataset('dev')
-elif dataset_name == 'genia':
-    dev_indices = []
-    tr_indices = []
-    for i in range(len(data_bundle.get_dataset('train'))):
-        if i%4==0 and len(dev_indices)<1669:
-            dev_indices.append(i)
-        else:
-            tr_indices.append(i)
-    eval_dataset = data_bundle.get_dataset('train')[dev_indices]
-    data_bundle.set_dataset(data_bundle.get_dataset('train')[tr_indices], name='train')
-    print(data_bundle)
-    callbacks.append(FitlogCallback(data_bundle.get_dataset('test'), raise_threshold=0.04, eval_begin_epoch=eval_start_epoch))  # 如果低于0.04大概率是讯飞了
-    fitlog.add_other(name='demo', value='split dev')
-else:
-    callbacks.append(FitlogCallback(raise_threshold=0.04, eval_begin_epoch=eval_start_epoch))  # 如果低于0.04大概率是讯飞了
-    eval_dataset = data_bundle.get_dataset('test')
+
+callbacks.append(FitlogCallback(raise_threshold=0.04, eval_begin_epoch=eval_start_epoch))  # 如果低于0.04大概率是讯飞了
+eval_dataset = data_bundle.get_dataset('dev')
 
 sampler = None
 if dataset_name in ('Share_2013',) :
@@ -217,9 +159,7 @@ else:
 metric = Seq2SeqSpanMetric(eos_token_id, num_labels=len(label_ids), target_type=target_type)
 
 ds = data_bundle.get_dataset('train')
-if dataset_name == 'conll2003':
-    ds.concat(data_bundle.get_dataset('dev'))
-    data_bundle.delete_dataset('dev')
+
 if save_model == 1:
     save_path = 'save_models/'
 else:
