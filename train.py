@@ -29,8 +29,9 @@ fitlog.set_log_dir('logs')
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset_name', default='squad', type=str)
-
+parser.add_argument('--checkpoint', type=str)
 args= parser.parse_args()
+checkpoint = args.checkpoint
 dataset_name = args.dataset_name
 args.length_penalty = 1
 args.save_model = 0
@@ -107,6 +108,9 @@ model = SequenceGeneratorModel(model, bos_token_id=bos_token_id,
                                max_length=max_len, max_len_a=max_len_a,num_beams=num_beams, do_sample=False,
                                repetition_penalty=1, length_penalty=length_penalty, pad_token_id=eos_token_id,
                                restricter=None)
+
+import torch
+model.load_state_dict(torch.load(checkpoint).state_dict())
 
 import torch
 if torch.cuda.is_available():
