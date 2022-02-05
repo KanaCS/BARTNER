@@ -198,7 +198,8 @@ class BartNERPipe(Pipe):
             path = paths
         else:
             path = paths['train']
-        data_bundle = JsonLoader(demo=demo).load(paths)
+        data_bundle = JsonLoader().load(paths)
+        #data_bundle = JsonLoader(demo=demo).load(paths)
 #         if 'conll2003' in path or 'ontonotes' in path:
 #             data_bundle = Conll2003NERLoader(demo=demo).load(paths)
 #         # elif 'ontonotes' in path:
