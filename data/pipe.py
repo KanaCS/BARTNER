@@ -199,7 +199,9 @@ class BartNERPipe(Pipe):
             path = paths
         else:
             path = paths['train']
-        data_bundle = JsonLoader().load(paths)
+        # data_bundle = JsonLoader().load(paths)
+        if('squad' in path):
+            data_bundle = SQUADLoader().load(paths)
         #data_bundle = JsonLoader(demo=demo).load(paths)
 #         if 'conll2003' in path or 'ontonotes' in path:
 #             data_bundle = Conll2003NERLoader(demo=demo).load(paths)
@@ -214,6 +216,12 @@ class BartNERPipe(Pipe):
         data_bundle = self.process(data_bundle)
         return data_bundle
 
+class SQUADLoader(ConllLoader):
+    def __init__(self, demo=False):
+        super().__init__(headers=[])
+        self.demo = demo
+    def _load(self, path: str):
+        return DataSet(json.load(open(path,'r')))
 
 class Conll2003NERLoader(ConllLoader):
     r"""
