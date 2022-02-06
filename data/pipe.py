@@ -1,3 +1,4 @@
+from fastNLP.io import JsonLoader
 from fastNLP.io import ConllLoader, Loader
 from fastNLP.io.loader.conll import _read_conll
 from fastNLP.io.pipe.utils import iob2, iob2bioes
