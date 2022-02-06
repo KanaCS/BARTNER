@@ -69,16 +69,16 @@ bart_name = args.bart_name
 schedule = args.schedule
 use_encoder_mlp = args.use_encoder_mlp
 
-# fitlog.add_hyper(args)
+fitlog.add_hyper(args)
 
-# #######hyper
-# #######hyper
+#######hyper
+#######hyper
 
-# demo = False
-# if demo:
-#     cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}_demo.pt"
-# else:
-#     cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}.pt"
+demo = False
+if demo:
+    cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}_demo.pt"
+else:
+    cache_fn = f"caches/data_{bart_name}_{dataset_name}_{target_type}.pt"
 
 @cache_results(cache_fn, _refresh=False)
 def get_data():
