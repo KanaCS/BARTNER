@@ -83,8 +83,8 @@ use_encoder_mlp = args.use_encoder_mlp
 @cache_results(cache_fn, _refresh=False)
 def get_data():
     pipe = BartNERPipe(tokenizer=bart_name, dataset_name=dataset_name, target_type=target_type)
-    paths = {'train': "../pj_dataset/squad/train.txt",
-             'test': "../pj_dataset/squad/dev.txt"}
+    paths = {'train': "../data/squad/train.txt",
+             'test': "../data/squad/dev.txt"}
     data_bundle = pipe.process_from_file(paths, demo=demo)
     return data_bundle, pipe.tokenizer, pipe.mapping2id
 
